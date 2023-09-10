@@ -29,17 +29,17 @@ func WebSepor(w http.ResponseWriter, r *http.Request) { //сепоратор т�
 	}
 
 	if r.Method == http.MethodPost && len(responseData) != 0 { //обработка пост запросов
-		body := fmt.Sprintf("Method: %s 201 Created\r\n", r.Method)                   //создаем параметр body и выводим тип метода "Method: GET"
-		body += fmt.Sprintf("Content-Type: %s\r\n", r.Header.Get("Content-Type"))     //читаем заголовок контент тайпа
-		body += fmt.Sprintf("Content-Length: %s\r\n", r.Header.Get("Content-Length")) //читаем длину контента
+		//body := fmt.Sprintf("Method: %s 200 Created\r\n", r.Method)                   //создаем параметр body и выводим тип метода "Method: GET"
+		//body += fmt.Sprintf("Content-Type: %s\r\n", r.Header.Get("Content-Type"))     //читаем заголовок контент тайпа
+		//body += fmt.Sprintf("Content-Length: %s\r\n", r.Header.Get("Content-Length")) //читаем длину контента
 
 		//заполняем данные структуры
 		SU.ShortID = rand.Intn(100)
 		SU.Short_Url = fmt.Sprintf("http://localhost:8080/%v", SU.ShortID)
-		body += fmt.Sprintf(SU.Short_Url)
+		body := fmt.Sprintf(SU.Short_Url)
 
 		SU.LongUrl = string(responseData) //запись параметра длинного урл
-
+		w.WriteHeader(http.StatusCreated)
 		w.Write([]byte(body)) //вывод боди
 
 	} else if r.Method == http.MethodGet { //обработка гет зпросов
@@ -47,17 +47,19 @@ func WebSepor(w http.ResponseWriter, r *http.Request) { //сепоратор т�
 		val := fmt.Sprint("/", SU.ShortID)
 
 		if rec == val {
-			body := fmt.Sprintf("Method: %s 307 Temporary Redirect\r\n", r.Method) //создаем параметр body и выводим тип метода "Method: POST"
-			body += fmt.Sprintf("Location: %s\r\n", SU.LongUrl)
-			w.Write([]byte(body))
+			//body := fmt.Sprintf("Method: %s 307 Temporary Redirect\r\n", r.Method) //создаем параметр body и выводим тип метода "Method: POST"
+			w.Header().Set("Location", SU.LongUrl)
+			w.WriteHeader(http.StatusTemporaryRedirect)
+			//body := fmt.Sprintf(SU.LongUrl)
+			//w.Write([]byte(body))
 		} else {
-			body := fmt.Sprint("400\r\n")
-			w.Write([]byte(body))
+			//body := fmt.Sprint("400\r\n")
+			//w.Write([]byte(body))
+			w.WriteHeader(http.StatusBadRequest)
 		}
 
 	} else {
-		body := fmt.Sprint("400\r\n")
-		w.Write([]byte(body))
+		w.WriteHeader(http.StatusBadRequest)
 	}
 }
 
